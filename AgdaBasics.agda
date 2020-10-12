@@ -349,3 +349,141 @@ record Monad (M : Set -> Set) : Set1 where
 mapM' : {M : Set -> Set} -> Monad M ->
         {A B : Set} -> (A -> M B) -> List A -> M (List B)
 mapM' Mon f xs = Monad.mapM Mon f xs
+
+-- 2.9 Exercises
+
+-- Exercise 2.1. Matrix transposition
+
+-- (a)
+
+Matrix : Set -> Nat -> Nat -> Set
+Matrix A n m = Vec (Vec A n) m
+
+vec : {n : Nat}{A : Set} -> A -> Vec A n
+vec {zero}  x = []
+vec {suc n} x = x :: vec x
+
+-- (b)
+
+infixl 90 _$_
+_$_ : {n : Nat}{A B : Set} -> Vec (A -> B) n -> Vec A n -> Vec B n
+[]        $ []        = []
+(f :: fs) $ (x :: xs) = f x :: fs $ xs
+
+-- (c)
+
+transpose : forall {A n m} -> Matrix A n m -> Matrix A m n
+transpose []          = vec []
+transpose (xs :: xss) = vmap _::_ xs $ transpose xss
+
+
+-- Exercise 2.2. Vector lookup
+
+-- (a)
+
+lem-!-tab : forall {A n} (f : Fin n -> A) (i : Fin n) ->
+            tabulate f ! i == f i
+lem-!-tab _ fzero    = refl
+lem-!-tab f (fsuc i) = lem-!-tab (f ∘ fsuc) i
+
+-- (b)
+
+lem-tab-! : forall {A n} (xs : Vec A n) -> tabulate (_!_ xs) == xs
+lem-tab-! []        = refl
+lem-tab-! (x :: xs) with tabulate (_!_ xs) | lem-tab-! xs
+... | .xs | refl = refl
+
+-- tabulate (_!_ (x :: xs)) == x :: xs
+   {- tabulate -}
+-- (_!_ (x :: xs)) fzero :: tabulate ((_!_ (x :: xs)) ∘ fsuc) == x :: xs
+   {- _!_ -}
+-- x :: tabulate ((_!_ (x :: xs)) ∘ fsuc) == x :: xs
+   {- _::_ destruct -}
+-- tabulate ((_!_ (x :: xs)) ∘ fsuc) == xs
+   {- _!_ -}
+-- tabulate (_!_ xs) == xs
+   {- induction hypothesis - lem-tab-! xs : tabulate (_!_ xs) == xs -}
+-- ⊤
+
+-- Exercise 2.3. Sublists
+
+-- (a)
+
+⊆-refl : {A : Set} {xs : List A} -> xs ⊆ xs
+⊆-refl {xs = []}      = stop
+⊆-refl {xs = x :: xs} = keep ⊆-refl
+
+⊆-trans : {A : Set} {xs ys zs : List A} ->
+             xs ⊆ ys -> ys ⊆ zs -> xs ⊆ zs
+⊆-trans  p        stop    = p
+⊆-trans  p       (drop q) = drop (⊆-trans p q)
+⊆-trans (drop p) (keep q) = drop (⊆-trans p q)
+⊆-trans (keep p) (keep q) = keep (⊆-trans p q)
+
+-- infixr 30 _::_
+data SubList {A : Set} : List A -> Set where
+  [] : SubList []
+  _::_ : forall x {xs} -> SubList xs -> SubList (x :: xs)
+  skip : forall {x xs} -> SubList xs -> SubList (x :: xs)
+
+-- (b)
+
+forget : {A : Set}{xs : List A} -> SubList xs -> List A
+forget  []      = []
+forget (x :: s) = x :: forget s
+forget (skip s) = forget s
+
+-- (c)
+
+lem-forget : {A : Set}{xs : List A}(zs : SubList xs) ->
+             forget zs ⊆ xs
+lem-forget  []       = stop
+lem-forget (_ :: zs) = keep (lem-forget zs)
+lem-forget (skip zs) = drop (lem-forget zs)
+
+-- (d)
+
+filter' : {A : Set} -> (A -> Bool) -> (xs : List A) -> SubList xs
+filter' p  [] = []
+filter' p (x :: xs) with p x
+... | true  = x :: filter' p xs
+... | false = skip (filter' p xs)
+
+-- (e)
+
+complement : {A : Set}{xs : List A} -> SubList xs -> SubList xs
+complement  []           = []
+complement (x :: zs)     = skip zs
+complement (skip {x} zs) = x :: zs
+
+-- (f)
+
+sublists : {A : Set}(xs : List A) -> List (SubList xs)
+sublists [] = [] :: []
+sublists (x :: xs) = map skip (sublists xs) ++ map (_::_ x) (sublists xs)
+
+sublists₂ : {A : Set}(xs : List A) -> List (SubList xs)
+sublists₂ []        = [] :: []
+sublists₂ (x :: xs) = concatMap powX (sublists₂ xs)
+  where
+    powX : forall {xs} -> SubList xs -> List (SubList (x :: xs))
+    powX s = (x :: s) :: skip s :: []
+    concatMap : {A B : Set} -> (A -> List B) -> List A -> List B
+    concatMap _  []       = []
+    concatMap f (x :: xs) = f x ++ concatMap f xs
+
+listMon : Monad List
+listMon = record { return = \ x -> x :: [] ; _>>=_  = bind }
+  where
+    bind : {A B : Set} -> List A -> (A -> List B) -> List B
+    bind  []       f = []
+    bind (x :: xs) f = f x ++ bind xs f
+
+sublistsₘ : {A : Set}(xs : List A) -> List (SubList xs)
+sublistsₘ [] = Monad.return listMon []
+sublistsₘ (x :: xs) = sublistsₘ xs >>= powX
+  where
+    powX : forall {xs} -> SubList xs -> List (SubList (x :: xs))
+    powX s = (x :: s) :: skip s :: []
+    _>>=_ : {A B : Set} -> List A -> (A -> List B) -> List B
+    _>>=_ = Monad._>>=_ listMon
