@@ -162,3 +162,9 @@ _==_ {list a} [] (_ :: _) = false
 _==_ {list a} (x :: xs) (y :: ys) = x == y and xs == ys
 --
 _==_ {pair a b} (x₁ , y₁) (x₂ , y₂) = x₁ == x₂ and y₁ == y₂
+
+example₁ : isTrue (2 + 2 == 4)
+example₁ = _
+
+example₂ : isTrue (not ((true :: false :: []) == (true :: true :: [])))
+example₂ = _
