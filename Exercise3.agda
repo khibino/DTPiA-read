@@ -1,5 +1,5 @@
 
--- Exercise 3.1.
+-- Exercise 3.1. Natural numbers
 
 open import Tutorial.Nat
 open import Tutorial.Bool
@@ -28,7 +28,7 @@ difference n m with compare n m
 ... | more k = suc k
 ... | same   = zero
 
--- Exercise 3.2
+-- Exercise 3.2. Type checking λ-calculus
 
 -- (a)
 open import Tutorial.List
@@ -136,7 +136,7 @@ infer Γ (lam σ e) with infer (σ :: Γ) e
 infer Γ (lam σ .(erase t))    | ok τ t = ok (σ ⇒ τ) (lam σ t)
 infer Γ (lam σ .(eraseBad b)) | bad b   = bad (lam σ b)
 
--- Exercise 3.3
+-- Exercise 3.3. Properties of list functions
 
 infixr 30 _::_
 data All {A : Set}(P : A -> Set) : List A -> Set where
