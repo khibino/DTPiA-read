@@ -183,3 +183,62 @@ lem-filter-complete p x hd px | true = hd
 lem-filter-complete p x (tl {y} el) px with p y
 lem-filter-complete p x (tl {_} el) px | true  = tl (lem-filter-complete p x el px)
 lem-filter-complete p x (tl {_} el) px | false = lem-filter-complete p x el px
+
+-- Exercise 3.4. An XML universe
+
+open import Logic.Base
+open import Tutorial.String
+
+Tag = String
+
+mutual
+  data Schema : Set where
+    tag : Tag -> List Child -> Schema
+
+  data Child : Set where
+    text : Child
+    elem : Nat -> Nat -> Schema -> Child
+
+data BList (A : Set) : Nat -> Set where
+  []   : forall {n} -> BList A n
+  _::_ : forall {n} -> A -> BList A n -> BList A (suc n)
+
+data Cons (A B : Set) : Set where
+  _::_ : A -> B -> Cons A B
+
+FList : Set -> Nat -> Nat -> Set
+FList A zero    m       = BList A m
+FList A (suc n) zero    = False
+FList A (suc n) (suc m) = Cons A (FList A n m)
+
+mutual
+  data XML : Schema -> Set where
+    element : forall {kids}(t : Tag) -> All Element kids ->
+              XML (tag t kids)
+
+  Element : Child -> Set
+  Element text = String
+  Element (elem n m s) = FList (XML s) n m
+
+
+-- (a)
+
+mutual
+  printXML : {s : Schema} -> XML s -> String
+  printXML (element {kids} t es) =
+    ("<" +++ t +++ ">") +++
+    printChildren {kids} es +++
+    ("</" +++ t +++ ">")
+
+  printChildren : {kids : List Child} -> All Element kids -> String
+  printChildren {[]}      [] = ""
+  printChildren {text :: ks} (x :: xs) = x +++ "\n" +++ printChildren xs
+  printChildren {elem n m s :: ks} (x :: xs) = printFList x +++ printChildren xs
+    where
+      printFList : {s : Schema}{n m : Nat} -> FList (XML s) n m -> String
+      printFList {_} {zero} {m} xs = printBList xs
+        where
+          printBList : {s : Schema}{n : Nat} -> BList (XML s) n -> String
+          printBList [] = ""
+          printBList (x :: xs) = printXML x +++ "\n" +++ printBList xs
+      printFList {_} {suc n} {suc m} (x :: xs) = printXML x +++ "\n" +++ printFList xs
