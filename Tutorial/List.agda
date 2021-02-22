@@ -12,7 +12,7 @@ data List (A : Set) : Set where
 
 {-# BUILTIN LIST List #-}
 
-{-# COMPILE GHC List = data [] = ([] | (:)) #-}
+{-# COMPILE GHC List = data [] ( ([]) | (:) ) #-}
 
 _++_ : {A : Set} -> List A -> List A -> List A
 []        ++ ys = ys
