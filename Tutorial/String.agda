@@ -12,8 +12,8 @@ postulate
 {-# BUILTIN STRING String #-}
 {-# BUILTIN CHAR Char #-}
 
-{-# COMPILE GHC String = type String #-}
-{-# COMPILE GHC Char = type Char #-}
+{--# COMPILE GHC String = type String #-}
+{--# COMPILE GHC Char = type Char #-}
 
 primitive
   primStringAppend   : String -> String -> String
