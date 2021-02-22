@@ -12,7 +12,7 @@ data Bool : Set where
 {-# BUILTIN TRUE true #-}
 {-# BUILTIN FALSE false #-}
 
-{-# COMPILE GHC Bool = data Bool (True | False) #-}
+{--# COMPILE GHC Bool = data Bool (True | False) #-}
 
 infixr 12 _and_
 infixr 10 _or_
