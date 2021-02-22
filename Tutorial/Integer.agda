@@ -12,11 +12,19 @@ data Integer : Set where
 {-# BUILTIN INTEGER Integer #-}
 {-# BUILTIN INTEGERPOS pos #-}
 {-# BUILTIN INTEGERNEGSUC negsuc #-}
-{-# COMPILE GHC Integer = type Integer #-}
+{--# COMPILE GHC Integer = type Integer #-}
 
 -- primitive
 --   primIntegerAbs   : Integer -> Nat
 --   primNatToInteger : Nat -> Integer
 
--- intToNat = primIntegerAbs
+integerAbs : Integer -> Nat
+integerAbs (pos n)    = n
+integerAbs (negsuc n) = suc n
+-- negsuc n == - (suc n)
+
+intToNat : Integer -> Nat
+intToNat = integerAbs
+
+natToInt : Nat -> Integer
 natToInt = pos
