@@ -11,8 +11,7 @@ data List (A : Set) : Set where
   _::_ : (x : A)(xs : List A) -> List A
 
 {-# BUILTIN LIST List #-}
-
-{-# COMPILE GHC List = data [] ( ([]) | (:) ) #-}
+{- Agda's builtin list is mapped to Haskell List -}
 
 _++_ : {A : Set} -> List A -> List A -> List A
 []        ++ ys = ys
