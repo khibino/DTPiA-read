@@ -11,4 +11,4 @@ run:
 
 clean:
 	rm -fr MAlonzo
-	find Ex4 \( -name '*.hi' -o -name '*.o' \) -print | xargs rm
+	find Ex4 \( -name '*.hi' -o -name '*.o' \) -print | xargs rm || true
