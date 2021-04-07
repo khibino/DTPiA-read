@@ -8,6 +8,10 @@ module Views where
 
 open import Tutorial.Nat
 
+{-# FOREIGN GHC
+  import Ex4.LambdaSyntax (Ty (I, (:=>:)), Expr (Var, (:$:), Lam))
+  #-}
+
 data Parity : Nat -> Set where
   even : (k : Nat) -> Parity (k * 2)
   odd  : (k : Nat) -> Parity (1 + k * 2)
@@ -110,6 +114,7 @@ infixr 30 _⇒_
 data Type : Set where
   ı : Type
   _⇒_ : Type -> Type -> Type
+{-# COMPILE GHC Type = data Ty ( I | (:=>:) ) #-}
 
 data Equal? : Type -> Type -> Set where
   yes : forall {τ} -> Equal? τ τ
@@ -129,6 +134,7 @@ data Raw : Set where
   var : Nat -> Raw
   _$_ : Raw -> Raw -> Raw
   lam : Type -> Raw -> Raw
+{-# COMPILE GHC Raw = data Expr ( Var | (:$:) | Lam ) #-}
 
 Cxt = List Type
 
