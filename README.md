@@ -1,4 +1,4 @@
-Example code of `Dependently Typed Programming in Agda`
+Example code of Dependently Typed Programming in Agda
 ===
 
 Checked with Agda 2.6.1.
